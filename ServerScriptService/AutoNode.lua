@@ -1,0 +1,21 @@
+-- --GAMEREMOTE
+--     GameRemote = nil  
+--     if not MainStorage:FindFirstChild("GameRemote") then
+--         GameRemote = SandboxNode.New("RemoteEvent")
+--         GameRemote.Name = "GameRemote"
+--         GameRemote:SetParent(MainStorage)
+--     else
+--         GameRemote = MainStorage:WaitForChild("GameRemote")
+--     end
+--     repeat wait(0.5) until GameRemote
+-- --远程打印
+--     PrintRemote = nil
+--     if not MainStorage:FindFirstChild("PrintRemote") then
+--         PrintRemote = SandboxNode.New("RemoteEvent")
+--         PrintRemote.Name = "PrintRemote"
+--         PrintRemote:SetParent(MainStorage)
+--     else
+--         PrintRemote = MainStorage:WaitForChild("PrintRemote")
+--     end
+--     repeat wait(0.5) until PrintRemote
+   
