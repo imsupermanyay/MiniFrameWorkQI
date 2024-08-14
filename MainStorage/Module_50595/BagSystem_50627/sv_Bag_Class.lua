@@ -189,22 +189,22 @@ net.Receive("Bag_SubmitItem_Server", function(ply, x, y, rotate, id, BagType)
     net.Fire(ply.UserId, "Bag_SubmitItem_Client",x,y,rotate,id,Bag.BagType)
 end)
 
--- 客户端 丢弃
+-- -- 客户端 丢弃
 net.Receive("Bag_DropItem_Server", function(ply, id, BagType)
     local Bag = data.GetData(ply.UserId, BagType)
     Bag:DelectItemById(id)
-    net.Fire(ply.UserId,"Bag_DropItem_Server",id,Bag.BagType) --发送删除物品
-end)
-
+    net.Fire(ply.UserId,"Bag_DelectItem_Server",id,Bag.BagType) --发送删除物品
+end) 
+ 
 -- 客户端 使用
 net.Receive("Bag_UseItem_Server", function(ply, id, BagType)
     local Bag = data.GetData(ply.UserId, BagType)
     local result = Bag:UseItemById(id,ply)
 
-    if result then
-        --使用成功
-        net.Fire(ply.UserId,"Bag_DropItem_Server",id,BagType) --发送删除物品
+    if result then 
+        --使用成功 
         Bag:DelectItemById(id)
+        net.Fire(ply.UserId,"Bag_DelectItem_Server",id,BagType) --发送删除物品
     end
 
 end)

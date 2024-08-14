@@ -54,14 +54,23 @@ function CreateItemInfo(item,Parent,mousepos,ContainerNode,IsClickClose,CloseFun
     end 
 
     --添加词条
-    local Introduce,Name,TypeName,Color,Quality,Icon = item.Introduce, item.Name, item.TypeName, ColorQuad.New(item.Color.R,item.Color.G,item.Color.B,155),item.Quality,item.Icon
+    local Introduce,Name,TypeName,Quality,Icon = item.Introduce, item.Name, item.TypeName,item.Quality,item.Icon
+
+ 
+    local Color = item.Color ~= nil and ColorQuad.New(item.Color.R,item.Color.G,item.Color.B,155) or ColorQuad.New(255,255,255,255)
+
+
     window.ItemName.Title = Name 
     window.Head.Pic.Icon = Icon 
     window.Head.FillColor = Color
     window.Introduce.Title = Introduce 
 
-    AddItemWord("类型",TypeName) 
-    AddItemWord("品质",Quality) 
+    if TypeName then
+        AddItemWord("类型",TypeName) 
+    end
+    if Quality then
+        AddItemWord("品质",Quality) 
+    end
     if item.Strengthen then 
         AddItemWord("强化","+"..item.Strengthen)
     end
@@ -319,7 +328,9 @@ end
 -----------------------------Item信息栏
 -- 创建物品详情 
 function BagRender:CreateItemCheck(item,mousepos)
-            local window = CreateItemInfo(item,self.ParentNode.Parent.Parent,mousepos,self.node)
+            local window = CreateItemInfo(item,self.ParentNode.Parent.Parent,mousepos,self.node,true,function ()
+                self.SlotWindowHandleNode:Destroy()
+            end)
             return window
 end
 -- 销毁物品详情
@@ -603,7 +614,7 @@ net.Receive("Bag_CaculateMoveSlot_Client",function (isblock,pos,BagType)
 end)
 
 --服务端 删除成功 本地渲染同步删除
-net.Receive("Bag_DropItem_Server",function (id,BagType)
+net.Receive("Bag_DelectItem_Server",function (id,BagType)
 
     --本地也删除掉那个节点
     local m_BagRender = data.GetData(localPlayer.UserId,BagType) --当前玩家背包

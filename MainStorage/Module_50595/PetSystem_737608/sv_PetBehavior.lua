@@ -1,4 +1,5 @@
 local WorldService=game:GetService("WorldService")
+local workspace = game:GetService("WorkSpace")
 
 PetBehavior = {
     DetectRange = 1000
@@ -21,43 +22,101 @@ function PetBehavior:new(PetObj)
     obj.neardistance = 200
     obj.fardistance = 400
     obj.Talktime = 0
+    obj.Skilltime = 0
     setmetatable(obj, {
         __index = function(t, k)
             return PetBehavior[k] or PetClass[k]
         end
-    })
+    }) 
+ 
 
     return obj
+
+
 end
  
 function PetBehavior:SetTarget(actor) 
     self.Target = actor
+
+    --执行技能钩子
+    for __, skill in pairs(self.Pet.AllSKill) do
+        if skill.SetTarget then    skill:SetTarget(actor)  end
+    end
+
+
     return true
 end
 
 function PetBehavior:PetDoAttack() 
     self:Talk(table.random(self.Pet.Chat["Attack"]))
+    print("使用攻击")
+    --执行宠物钩子
     self.Pet:DoAttack()
+
+
+    --执行技能钩子
+    for __, skill in pairs(self.Pet.AllSKill) do
+        if skill.DoAttack then    skill:DoAttack()  end
+    end
+
+
 end
 
 function PetBehavior:PetDoSkill() 
     self:Talk(table.random(self.Pet.Chat["Skill"]))
+    print("使用技能")
     self.Pet:DoSkill()
+
+
+
+    --执行技能钩子
+    for __, skill in pairs(self.Pet.AllSKill) do
+        if skill.DoSkill then    skill:DoSkill()  end
+    end
+
 end
 
 function PetBehavior:PetDead() 
     self:Talk(table.random(self.Pet.Chat["Dead"]))
     self.Pet:Dead()
+
+    
+
+    --执行技能钩子
+    for __, skill in pairs(self.Pet.AllSKill) do
+        if skill.Dead then    skill:Dead()  end
+    end
+
 end 
 
 function PetBehavior:PetHurt() 
     self:Talk(table.random(self.Pet.Chat["Hurt"]))
     self.Pet:Hurt()
+
+
+    
+    --执行技能钩子
+    for __, skill in pairs(self.Pet.AllSKill) do
+        if skill.Hurt then    skill:Hurt()  end
+    end
+
 end 
 
 
+
+-- --寻敌逻辑
+-- function PetBehavior:SearchTarget()
+    
+-- end 
+
+--停止移动
+function PetBehavior:StopMove()
+    self.MoveStop = true
+    self.Pet.Actor:StopMove()
+end 
 --移动到目标位置
 function PetBehavior:MoveTowardsTarget(petactor, dt)
+    if self.MoveStop then return end
     if not self.targetPosition then return end
 
     local dir = math.CalculateDirection(petactor.Position, self.targetPosition)
@@ -81,9 +140,9 @@ function PetBehavior:MoveTowardsTarget(petactor, dt)
     elseif self.currentSpeed > targetSpeed then
         self.currentSpeed = math.max(self.currentSpeed - self.deceleration , targetSpeed)
     end
-   
+    
     -- 计算移动量
-    local moveStep = dir * self.currentSpeed 
+    local moveStep = Vector3.new(dir.X,0,dir.Z) * self.currentSpeed 
     petactor.Position = petactor.Position + moveStep * dt
 end
 
@@ -107,8 +166,8 @@ function PetBehavior.Think(dt, self)
     if distance > 3000 then  
         petactor.Position = ply.Position 
         Effect:NewEffect(ply, "Smoke7", petactor.Position)
-    end
-
+    end 
+    self.Target = workspace.Actor3 
     --有目标则战斗
     if self.Target then
         self:ChangeState("Fight")
@@ -126,6 +185,7 @@ function PetBehavior:ChangeState(State)
     if self.State == State then return end
     self.State = State
     self.StateThink = self[State]
+    
 end
 
 --跟随状态
@@ -139,10 +199,10 @@ function PetBehavior:Follow(dt)
     self.targetPosition = ply.Position 
     self:MoveTowardsTarget(petactor, dt)
     petactor.Euler = math.DirectionToEuler(Vector3.new(dir.x,0,dir.z))
-
+  
     --太近了就取消跟随
     if distance < self.neardistance then
-        petactor:StopMove()
+        self:StopMove()
         self.targetPosition = nil
         self.currentSpeed = 0
         self:ChangeState("Idle")
@@ -154,7 +214,7 @@ function PetBehavior:Idle(dt)
 
 end
 
---攻击状态 
+--攻击状态  
 function PetBehavior:Fight(dt)
     local petactor = self.Pet.Actor 
     local target= self.Target
@@ -180,13 +240,14 @@ function PetBehavior:Fight(dt)
     if os.time() > self.Attacktime + 2 and distance < 200  then
         self.BlockAttack = true
         if os.time() > self.Skilltime + self.Pet.SkillCoolDown then
-            --技能攻击
-            self.Skilltime = os.time()
-            petactor:PetDoSkill(target)
+            --技能攻击 
+            self.Skilltime = os.time() 
+            self.Attacktime = os.time()
+            self:PetDoSkill() 
         else
             self.Attacktime = os.time()
-            petactor:StopMove()
-            petactor:PetDoAttack(target)
+            self:StopMove() 
+            self:PetDoAttack()
         end
     end
 

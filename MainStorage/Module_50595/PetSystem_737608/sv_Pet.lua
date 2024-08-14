@@ -17,14 +17,24 @@ end)
  
 net.Receive("Test2",function (ply)
 
-    local PlayerPet = data.GetData(ply.UserId,"PetManager") 
-    local dog = PetClass:new("Dog",ply)
-    PlayerPet:AddPet(dog)
+    -- local PlayerPet = data.GetData(ply.UserId,"PetManager") 
+    -- local dog = PetClass:new("Dog",ply)
+    -- PlayerPet:AddPet(dog)
+
 end)
 
 
 net.Receive("Test3",function (ply)
+
+    
+    local PlayerPet = data.GetData(ply.UserId,"PetManager") 
+    local dog = PetClass:new("Dog",ply)
+    PlayerPet:AddPet(dog)
+
+    
     local PlayerPet = data.GetData(ply.UserId,"PetManager") 
     PlayerPet:OpenBag()
+
+    
 
 end)

@@ -1,8 +1,16 @@
 
+
 Item = {
     Func ={},
     Data ={}
 }
+
+Item.CustomUseFuncType ={
+
+}
+
+
+
 --初始化所有配置
 function Item.Func.InitAllConfig()
     for itemtype, typeobj in pairs(Config_Items.Type) do
@@ -12,15 +20,16 @@ function Item.Func.InitAllConfig()
             itemdata.classname = class
             itemdata.Type = itemtype
             Item.Data[itemtype][class] = itemdata 
-            if itemtype == "Equipment" then
-                itemdata.UseFunc = EquipmentFunc
+            
+            if Item.CustomUseFuncType[itemtype] then
+                itemdata.UseFunc = Item.CustomUseFuncType[itemtype]
             end
+
         end
     end  
 end 
 Item.Func.InitAllConfig() 
-
-
+ 
 function Item.Func.LoadItem(tab,itemtype,typename,UseFunc)
     Config_Items.Items[itemtype] = tab
     Config_Items.Type[itemtype] = {Name =typename}
@@ -28,9 +37,12 @@ function Item.Func.LoadItem(tab,itemtype,typename,UseFunc)
     for class, data in pairs(tab) do
         local itemdata = data 
         itemdata.classname = class
-        itemdata.Type = itemtype
+        itemdata.Type = itemtype 
         Item.Data[itemtype][class] = itemdata 
         itemdata.UseFunc = UseFunc
+        if UseFunc then
+            Item.CustomUseFuncType[itemtype] = itemdata.UseFunc
+        end
     end
 end
 

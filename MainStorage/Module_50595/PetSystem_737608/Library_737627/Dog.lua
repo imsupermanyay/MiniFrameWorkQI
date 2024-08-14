@@ -1,18 +1,18 @@
 PET = {}
 
 
-PET.BaseValue_Hp = 0
-PET.BaseValue_PhysicDanmage = 0
-PET.BaseValue_MagicDanmage = 0
-PET.BaseValue_PhysicDefens = 0
-PET.BaseValue_MagicDefens = 0 
+PET.ZiZhiGrowp_Hp = 1
+PET.ZiZhiGrowp_PhysicDanmage = 1
+PET.ZiZhiGrowp_MagicDanmage = 1
+PET.ZiZhiGrowp_PhysicDefens = 1
+PET.ZiZhiGrowp_MagicDefens = 1
 
 PET.Size = 1 
 PET.Tall = 250
 PET.Speed = 400
 PET.SkillCoolDown = 10
-PET.Model = "resid&restype=12://278655975002697728"
-PET.ControllerAsset = "resid&restype=12://278575624803274752"
+PET.Model = "RainbowId&filetype=8://250428453211410432"
+PET.ControllerAsset = "resid&restype=12://250428515979169792"
 PET.HeadIcon = "resid://279379558758838272"
 PET.Nick = "狗子"
 

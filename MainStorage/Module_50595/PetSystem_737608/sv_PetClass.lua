@@ -17,18 +17,16 @@ function PetClass:new(classname,ply)
     obj.ZiZhi_PhysicDefens = math.floor(math.random(0,3000)) 
     obj.ZiZhi_MagicDefens = math.floor(math.random(0,3000)) 
 
-     obj.Exp = 0
-     obj.MaxExp = 0
-     obj.MaxHp = 0
-     obj.Level = 0
-  
-     obj.Hp = 0
-     obj.PhysicDanmage = 0
-     obj.MagicDanmage = 0
-     obj.PhysicDefens = 0
-     obj.MagicDefens = 0 
+    obj.Exp = 0
+    obj.MaxExp = 100
+    obj.Level = 1
 
-    
+    obj.Hp = 0
+    obj.MaxHp = 0
+    obj.PhysicDanmage = 0
+    obj.MagicDanmage = 0
+    obj.PhysicDefens = 0
+    obj.MagicDefens = 0 
 
     obj.Equipment ={
         Neck = nil,
@@ -36,9 +34,17 @@ function PetClass:new(classname,ply)
         Armor = nil,
     }
 
+    obj.AllSKill = {}
+
     count = count + 1 
     self.__index = self
     setmetatable(obj, self)
+ 
+
+    obj:CaculateMaxExp()
+    obj:CaculateEquipmentAttribute()
+
+
     return obj
 end
 
@@ -53,7 +59,7 @@ function PetClass:Call()
     self.Actor.Parent = workspace
     self.Actor.ModelId = self.Model 
     self.Actor.Animator.ControllerAsset = self.ControllerAsset
-    self.Actor.LocalScale = Vector3.new(0,0,0)
+    self.Actor.LocalScale = Vector3.new(1,1,1)
     self.Actor.Name = self.Id
 
     --出场动画
@@ -94,18 +100,129 @@ end
 function PetClass:PetEquipment(Part,Armor)
     if self.Equipment[Part]  then print("lua error: 此部位已有") return false end
     self.Equipment[Part] = Armor
+    self:CaculateEquipmentAttribute()
     return true
 end 
 --宠物卸下装备
 function PetClass:PetUnEquipment(Part)
     if not self.Equipment[Part]  then print("lua error: 此部位没有") return false end
     self.Equipment[Part] = nil
+    self:CaculateEquipmentAttribute()
     return true
 end
+--计算装备加成
+function PetClass:CaculateEquipmentAttribute()
+    self.MaxHp = 0
+    self.PhysicDanmage = 0
+    self.MagicDanmage = 0
+    self.PhysicDefens = 0
+    self.MagicDefens = 0 
+    local level = self.Level
 
-function PetClass:CaculateAttribute()
-    
+    --玩家属性
+    local zi_zhi  =(math.pow(2,math.ceil(level/10))*level)
+    local gen_gu  =(math.pow(2,math.ceil(level/10))*level)
+    local shen_shi=(math.pow(2,math.ceil(level/10))*level) 
+    local wu_xing =(math.pow(2,math.ceil(level/10))*level)
+
+    self.MaxHp  = (math.pow(2,math.ceil(level/10))*50*level)
+    self.physicDanmage =  level + zi_zhi * 10  + shen_shi * 5 
+    self.physicDenfens =  level + gen_gu * 5
+    self.magicDanmage =   level + wu_xing * 10  + shen_shi * 5 
+    self.magicDenfens =   level + gen_gu * 5
+
+
+
+
+    --装备提升 
+    for slot, equipment in pairs(self.Equipment) do
+        self.MaxHp          =      self.MaxHp            +  (equipment.Data.Hp             ~= nil  and equipment.Data.Hp            or   0)        
+        self.PhysicDanmage  =      self.PhysicDanmage    +  (equipment.Data.PhysicDanmage  ~= nil  and equipment.Data.PhysicDanmage or   0)     
+        self.MagicDanmage   =      self.MagicDanmage     +  (equipment.Data.MagicDanmage   ~= nil  and equipment.Data.MagicDanmage  or   0)      
+        self.PhysicDefens   =      self.PhysicDefens     +  (equipment.Data.PhysicDefens   ~= nil  and equipment.Data.PhysicDefens  or   0)      
+        self.MagicDefens    =      self.MagicDefens      +  (equipment.Data.MagicDefens    ~= nil  and equipment.Data.MagicDefens   or   0)      
+    end
+
+
+
+
+    --资质提升
+        local GrowZiZhi_Hp            =  self.ZiZhi_Hp               /1000
+        local GrowZiZhi_PhysicDanmage =  self.ZiZhi_PhysicDanmage    /1000
+        local GrowZiZhi_MagicDanmage  =  self.ZiZhi_MagicDanmage     /1000
+        local GrowZiZhi_PhysicDefens  =  self.ZiZhi_PhysicDefens     /1000
+        local GrowZiZhi_MagicDefens   =  self.ZiZhi_MagicDefens      /1000
+
+        self.MaxHp             =      self.MaxHp               + GrowZiZhi_Hp             * self.ZiZhiGrowp_Hp 
+        self.PhysicDanmage  =      self.PhysicDanmage    + GrowZiZhi_PhysicDanmage  * self.ZiZhiGrowp_PhysicDanmage 
+        self.MagicDanmage   =      self.MagicDanmage     + GrowZiZhi_MagicDanmage   * self.ZiZhiGrowp_MagicDanmage 
+        self.PhysicDefens   =      self.PhysicDefens     + GrowZiZhi_PhysicDefens   * self.ZiZhiGrowp_PhysicDefens 
+        self.MagicDefens    =      self.MagicDefens      + GrowZiZhi_MagicDefens    * self.ZiZhiGrowp_MagicDefens 
+
+    --去小数
+        self.MaxHp           =  math.floor(self.MaxHp         )
+        self.PhysicDanmage   =  math.floor(self.PhysicDanmage )
+        self.MagicDanmage    =  math.floor(self.MagicDanmage  )
+        self.PhysicDefens    =  math.floor(self.PhysicDefens  )
+        self.MagicDefens     =  math.floor(self.MagicDefens   )
 end
+
+
+--计算最大经验
+function PetClass:CaculateMaxExp()
+    self.MaxExp=(self.Level*100)*math.pow(4,math.floor(self.Level/10)) --结算最大等级
+end
+--检测升级
+function PetClass:CheckLevelUp()
+    if self.Exp >= self.MaxExp then
+        self.Level = self.Level + 1  --等级+1
+        self.Exp = self.Exp - self.MaxExp --经验扣掉
+        self:CaculateMaxExp() --重新计算最大经验
+        self:CheckLevelUp()
+    end
+end
+--增加经验
+function PetClass:AddExp(value)
+    self.Exp = self.Exp + value
+    self:CheckLevelUp()
+end
+--设置等级
+function PetClass:SetLevel(value)
+    self.Level = value
+    self:CaculateMaxExp()
+end
+--设置经验
+function PetClass:SetExp(value)
+    self.Exp = value
+    self:CheckLevelUp()
+end
+
+--[[ 
+
+    --》玩家数值系统
+            zi_zhi  =(math.pow(2,math.ceil(level/10))*level)
+            gen_gu  =(math.pow(2,math.ceil(level/10))*level)
+            shen_shi=(math.pow(2,math.ceil(level/10))*level)
+            wu_xing =(math.pow(2,math.ceil(level/10))*level)
+
+            Hp  = (math.pow(2,math.ceil(level/10))*50*level)
+            physicDanmage =  level + zi_zhi * 10  + shen_shi * 5 
+            physicDenfens =  level + gen_gu * 5
+            magicDanmage =   level + wu_xing * 10  + shen_shi * 5 
+            magicDenfens =   level + gen_gu * 5
+
+
+    --》宠物
+    此宠物资质系数 防御 = 2
+    此宠物资质系数 攻击 = 3
+    此宠物各种基础数值 
+
+    资质增长值 =  资质 / 100  
+    资质属性 = 资质增长值 * 资质系数
+
+
+    宠物最终属性 = 玩家属性 + 资质属性 + 装备属性  
+]]
 
 -- 获取网络信息方法
 function PetClass:GetInfo()
@@ -152,7 +269,42 @@ function PetClass:GetInfo()
         end
     end
 
+    info.AllSKill = {}
+    for index, skill in pairs(self.AllSKill) do
+        table.insert(info.AllSKill,skill:GetInfo())
+    end
+
+
     return info
+end
+
+--获取技能
+function PetClass:AddSkill(skill)
+    if  self.AllSKill[skill.classname]  then
+        print("宠物技能添加失败")
+        return false
+    end
+    for __ , class in ipairs(skill.SkillClash) do
+        if  self.AllSKill[class]  then
+            print("宠物技能添加失败")
+            return false
+        end
+    end
+     
+    print("宠物技能添加成功")
+    self.AllSKill[skill.classname] = skill
+    return true
+end
+--删除技能 
+function PetClass:DelectSkill(skillclassname)
+    if  not self.AllSKill[skillclassname]  then
+        print("宠物技能删除失败")
+        return false
+    end
+
+    self.AllSKill[skillclassname]  = nil
+    print("宠物技能删除成功")
+    return true
 end
 
 -- 设置方法
@@ -172,17 +324,11 @@ function PetClass:SetMagicDefens(value)
     self.MagicDefens = value
 end
 
-function PetClass:SetLevel(value)
-    self.Level = value
-end
 
 function PetClass:SetId(value)
     self.Id = value
 end
 
-function PetClass:SetExp(value)
-    self.Exp = value
-end
 
 function PetClass:SetMaxExp(value)
     self.MaxExp = value

@@ -54,7 +54,7 @@ local function FrashUI(info)
     --你的
     for index, pet in ipairs(info) do
         local slot = petwin.PetList.Slot:Clone()
-        slot.Parent = petwin.PetList.UIList
+        slot.Parent = petwin.PetList.UIList 
         slot.Visible = true
         slot.Icon = unchoisbtn
         slot.PetName.Title = pet.Nick
@@ -96,14 +96,21 @@ local function FrashUI(info)
                 petwin.Pet.Attribute.PhysicDefens_copy.Title = tostring(pet.ZiZhi_PhysicDefens)
                 petwin.Pet.Attribute.MagicDefens_copy.Title = tostring(pet.ZiZhi_MagicDefens)
                 petwin.Pet.Attribute.MaxHp_copy.Title = tostring(pet.ZiZhi_Hp)
+
+                print("应该渲染技能栏")
                 --技能栏
-                
+                for key, skill in pairs(pet.AllSKill) do
+                    local s = petwin.Bag.SkillList["Skill"..key]
+                    s.Icon = skill.Icon
+                end   
+
  
                 --装备栏 
                 petwin.Pet.Neck.Pic.Icon = pet.Equipment.Neck and  pet.Equipment.Neck.Icon  or ""
                 petwin.Pet.Jewelry.Pic.Icon = pet.Equipment.Jewelry and  pet.Equipment.Jewelry.Icon  or ""
                 petwin.Pet.Armor.Pic.Icon = pet.Equipment.Armor and  pet.Equipment.Armor.Icon  or ""
  
+                
 
                 net.Fire("PlayerChoisePetSlot", pet.Id)
                 
@@ -111,9 +118,9 @@ local function FrashUI(info)
     end
 
     --默认首选
-        if allslot[1] then
-            allslot[1].Click:Emit(allslot[1],true, Vector2.new(1,1), 0)
-        end
+    if allslot[1] then
+        allslot[1].Click:Emit(allslot[1],true, Vector2.new(1,1), 0)
+    end
 end
 
 
@@ -132,9 +139,8 @@ net.Receive("SyncPetInfoAndOpenPetManager",function (info,baginfo)
 
     localPlayer.PlayerGui.PetUI.Pet.Visible = true
 end)
- 
- 
- 
+
+
 --出战请求
 petwin.Call.Click:Connect(function()
     --出战请求
@@ -172,16 +178,32 @@ function CreateItemHandle(item,node)
         SlotWindowHandleObj.MainNode.Visible = false
         ItemCheckNode.Visible = false 
     end)  
-
+ 
     SlotWindowHandleObj:SetData(item) 
-    SlotWindowHandleObj:SetSize(Vector2.new(260,400)) 
-    SlotWindowHandleObj:SetParent( node.Parent) 
+    SlotWindowHandleObj:SetSize(Vector2.new(260,400))  
+    SlotWindowHandleObj:SetParent( node) 
    -- 如果 mousepos.X+ Size.x 大于ScreenSize.x那么 pos为 mouspos-size 
 --    local x_left =  node.Parent.Position.X  
-   local x_right =  node.Position.X +  node.Size.X  
 
-    SlotWindowHandleObj:SetPos(Vector2.new(x_right - 280 , node.Position.Y -  node.Position.Y/1.4 ))  
+ 
+
+    SlotWindowHandleObj:SetPos(Vector2.new( node.Size.X , 0 ))   
     SlotWindowHandleObj:Show() 
+    SlotWindowHandleObj.RanderIndex = 99991
+end
+
+
+
+
+-- 点击技能按钮 
+for key, Skillbtn in pairs(petwin.Bag.SkillList.Children) do
+    Skillbtn.Click:Connect(function(node,issuccess,mousepos)
+        if not currentpet then return end
+        local AllSKill = currentpet.AllSKill
+        if Skillbtn.Icon == "" or  not AllSKill[key] then return end  
+        ItemCheckNode = CreateItemInfo(AllSKill[key],node.Parent.Parent,mousepos,node,true,function ()
+        end)
+    end)
 end
 
 --点击装备格子
@@ -192,7 +214,7 @@ petwin.Pet.Neck.Click:Connect(function(node,issuccess,mousepos)
         ItemCheckNode = CreateItemInfo(iteminfo,node.Parent.Parent,mousepos,node,true,function ()
             SlotWindowHandleObj.MainNode.Visible = false
         end)
-        CreateItemHandle(iteminfo,node)
+        CreateItemHandle(iteminfo,ItemCheckNode)
 end)
 petwin.Pet.Jewelry.Click:Connect(function(node,issuccess,mousepos)
     if not currentpet then return end
@@ -201,7 +223,7 @@ petwin.Pet.Jewelry.Click:Connect(function(node,issuccess,mousepos)
         ItemCheckNode = CreateItemInfo(iteminfo,node.Parent.Parent,mousepos,node,function ()
             SlotWindowHandleObj.MainNode.Visible = false
         end)
-        CreateItemHandle(iteminfo,node) 
+        CreateItemHandle(iteminfo,ItemCheckNode) 
 end)
 petwin.Pet.Armor.Click:Connect(function(node,issuccess,mousepos)
     if not currentpet then return end
@@ -210,5 +232,5 @@ petwin.Pet.Armor.Click:Connect(function(node,issuccess,mousepos)
         ItemCheckNode = CreateItemInfo(iteminfo,node.Parent.Parent,mousepos,node,function ()
             SlotWindowHandleObj.MainNode.Visible = false
         end)
-        CreateItemHandle(iteminfo,node)
+        CreateItemHandle(iteminfo,ItemCheckNode)
 end)

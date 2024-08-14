@@ -54,7 +54,7 @@ end
 
 
 function ItemObj:GetId()
-    return self.ObjId
+    return self.ItemId 
 end
 
 function ItemObj:GetRotate()

@@ -31,7 +31,6 @@ end)
 
 
 net.Receive("Test4",function (ply)
-    local c = ItemObj:new("PetArmor")
     local bag = data.GetData(ply.UserId,"PetBag")
-    bag:AddItem(c)
+    bag:AddItem(ItemObj:new(ply.PlayerGui.HUD.UITextInput.Text))
 end)
